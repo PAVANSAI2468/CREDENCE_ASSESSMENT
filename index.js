@@ -1,3 +1,5 @@
+
+
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
@@ -8,7 +10,11 @@ const bodyParser = require("body-parser");
 const User = require("./Models/usersData");
 const Item = require("./Models/items");
 
+require("dotenv").config();
 app.use(bodyParser.json());
+const PORT = process.env.PORT || 3008;
+const MONGO_URI = process.env.MONGO_URI;
+const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
@@ -23,11 +29,11 @@ app.get("/date", (req, res) => {
 });
 
 // MongoDB connection
-mongoose.connect("mongodb+srv://PavanSai2628:PavanSai2628@cluster0.ucnnbqr.mongodb.net/USERSDB")
+mongoose.connect(MONGO_URI)
   .then(() => {
     console.log("Connected to MongoDB");
-    app.listen("3008", () => {
-      console.log("Listening on port 3008");
+    app.listen(PORT, () => {
+      console.log(`Listening on port ${PORT}`);
     });
   })
   .catch((err) => {
@@ -74,7 +80,7 @@ app.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid Password" });
     }
 
-    const token = jwt.sign({ email: user.email }, "jwt_token");
+    const token = jwt.sign({ email: user.email }, JWT_SECRET);
     res.json({ message: "Login successful", token });
   } catch (error) {
     res.status(500).json({ message: "Internal server error", error: error.message });
@@ -90,7 +96,7 @@ const authenticatedUser = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token.split(" ")[1], 'jwt_token');
+    const decoded = jwt.verify(token.split(" ")[1], JWT_SECRET);
     req.user = decoded;
     next();
   } catch (error) {
@@ -159,7 +165,6 @@ app.put("/items/:id", authenticatedUser, async (req, res) => {
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 });
-
 
 app.delete("/items/:id", authenticatedUser, async (req, res) => {
   const { id } = req.params;
