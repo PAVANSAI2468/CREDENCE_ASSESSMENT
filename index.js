@@ -14,6 +14,8 @@ require("dotenv").config();
 app.use(bodyParser.json());
 const PORT = process.env.PORT || 3008;
 const MONGO_URI = process.env.MONGO_URI;
+console.log('MONGO_URI:', process.env.MONGO_URI);
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use((err, req, res, next) => {
